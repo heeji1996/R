@@ -1,0 +1,38 @@
+library(koNLP)
+library(dplyr)
+useNIADic()
+
+txt <- readLines("makeup2.txt")
+head(txt)
+library(stringr)
+txt <- str_replace_all(txt,"\\W"," ")
+txt <- str_replace_all(txt,"\"", " ")
+
+nouns <- extractNoun(txt)
+head(nouns)
+
+wordcount <- table(unlist(nouns))
+df_word <- as.data.frame(wordcount,stringsAsFactors=F)
+df_word <- rename(
+  df_word, word=Var1, freq = Freq)
+
+df_word <- filter(df_word,nchar(word)>=2)
+top_20 <- df_word %>% 
+  arrange(desc(freq)) %>%
+  head(20)
+top_20
+
+# 워드 클라우드 생성하기
+library(wordc)
+pal <- brewer.pal(8,"Dark2")
+set.seed(1234)
+wordcloud(
+  words = df_word$word,
+  freq = df_word$freq,
+  min.freq = 2,
+  max.words = 200,
+  random.order = F, # 고빈도 단어 중아위치
+  rot.per =.1,
+  scale = c(4,0.3),
+  color = pal
+)
